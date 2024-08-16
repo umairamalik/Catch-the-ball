@@ -1,0 +1,88 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+.game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #87CEEB; /* Light sky blue */
+    overflow: hidden;
+}
+
+.cloud-icon {
+    position: absolute;
+    font-size: 2rem; /* Size of the cloud icon */
+    color: #ffffff; /* Color of the cloud icon */
+}
+
+#basket {
+    position: absolute;
+    bottom: 20px;
+    width: 160px;
+    height: 90px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+#basket i {
+    font-size: 3rem; /* Adjust the icon size */
+}
+
+#ball {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #FF4500;
+    border-radius: 50%;
+    top: 0;
+    left: calc(50% - 15px);
+}
+
+#score {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 32px;
+    color: #ffffff;
+    background: linear-gradient(145deg, #1e90ff, #00bfff); /* Gradient background */
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+    font-family: 'Comic Sans MS', cursive, sans-serif; /* Playful font */
+}
+
+#instruction {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #FFD700; /* Bright yellow */
+    color: #FF4500; /* Bright orange text */
+    padding: 20px;
+    border-radius: 15px;
+    font-size: 24px;
+    text-align: center;
+    z-index: 10;
+    border: 5px solid #FF4500; /* Orange border */
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
