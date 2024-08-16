@@ -1,75 +1,139 @@
-const basket = document.getElementById('basket');
-const ball = document.getElementById('ball');
-const scoreElement = document.getElementById('score');
-const instruction = document.getElementById('instruction');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-let basketPosition = window.innerWidth / 2 - 75; // Center the basket
-let ballPosition = { x: window.innerWidth / 2 - 15, y: 0 };
-let score = 0;
-const ballSize = 30; // Size of the ball
+// Set canvas size
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-document.addEventListener('keydown', (event) => {
-    moveBasket(event);
-    // Hide the instruction message when the user starts playing
-    if (instruction.style.display !== 'none') {
-        instruction.style.display = 'none';
-    }
-});
+// Cart properties
+const cartWidth = 100;
+const cartHeight = 20;
+let cartX = (canvas.width - cartWidth) / 2;
 
-function moveBasket(event) {
-    const key = event.key;
-    if (key === 'ArrowLeft' && basketPosition > 0) {
-        basketPosition -= 20;
-        basket.style.left = `${basketPosition}px`;
-    } else if (key === 'ArrowRight' && basketPosition < window.innerWidth - 160) {
-        basketPosition += 20;
-        basket.style.left = `${basketPosition}px`;
-    }
+// Ball properties
+const ballRadius = 10;
+let balls = [];
+
+// Key press and touch variables
+let rightPressed = false;
+let leftPressed = false;
+let touchStartX = null;
+
+// Event listeners
+document.addEventListener('keydown', keyDownHandler);
+document.addEventListener('keyup', keyUpHandler);
+document.addEventListener('touchstart', touchStartHandler);
+document.addEventListener('touchmove', touchMoveHandler);
+document.addEventListener('touchend', touchEndHandler);
+
+// Create new ball
+function createBall() {
+    const x = Math.random() * (canvas.width - 2 * ballRadius) + ballRadius;
+    balls.push({ x: x, y: -ballRadius, dy: 2 });
 }
 
-function dropBall() {
-    ballPosition.y += 5;
-    ball.style.top = `${ballPosition.y}px`;
-
-    if (ballPosition.y > window.innerHeight) {
-        resetBall();
-    }
-
-    if (ballPosition.y > window.innerHeight - 90 &&
-        ballPosition.x > basketPosition - 30 &&
-        ballPosition.x < basketPosition + 160) {
-        score++;
-        scoreElement.innerText = `Score: ${score}`;
-        resetBall();
-    }
+// Draw cart
+function drawCart() {
+    ctx.fillStyle = '#ff6347'; // Tomato color
+    ctx.fillRect(cartX, canvas.height - cartHeight, cartWidth, cartHeight);
 }
 
-function resetBall() {
-    ballPosition = { x: Math.random() * (window.innerWidth - ballSize), y: 0 };
-    ball.style.left = `${ballPosition.x}px`;
-    ball.style.top = `${ballPosition.y}px`;
+// Draw ball
+function drawBall(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffd700'; // Gold color
+    ctx.fill();
+    ctx.closePath();
 }
 
-function createCloud() {
-    const cloud = document.createElement('i');
-    cloud.className = 'fas fa-cloud cloud-icon';
-    cloud.style.top = `${Math.random() * 100}px`;
-    cloud.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
-    document.querySelector('.relative').appendChild(cloud);
+// Draw everything
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    setInterval(() => {
-        const currentLeft = parseFloat(cloud.style.left);
-        if (currentLeft > -50) {
-            cloud.style.left = `${currentLeft - 1}px`;
-        } else {
-            cloud.remove();
+    drawCart();
+
+    for (let i = 0; i < balls.length; i++) {
+        let ball = balls[i];
+        drawBall(ball.x, ball.y);
+        ball.y += ball.dy;
+
+        // Check for collision with cart
+        if (ball.y + ballRadius > canvas.height - cartHeight &&
+            ball.x > cartX &&
+            ball.x < cartX + cartWidth) {
+            balls.splice(i, 1); // Remove ball
+            i--; // Adjust index
+        } else if (ball.y > canvas.height) {
+            balls.splice(i, 1); // Remove ball
+            i--; // Adjust index
         }
-    }, 20);
+    }
+
+    requestAnimationFrame(draw);
 }
 
-function startGame() {
-    setInterval(dropBall, 20);
-    setInterval(createCloud, 2000);
+// Handle key down
+function keyDownHandler(event) {
+    if (event.key === 'Right' || event.key === 'ArrowRight') {
+        rightPressed = true;
+    } else if (event.key === 'Left' || event.key === 'ArrowLeft') {
+        leftPressed = true;
+    }
 }
 
-startGame();
+// Handle key up
+function keyUpHandler(event) {
+    if (event.key === 'Right' || event.key === 'ArrowRight') {
+        rightPressed = false;
+    } else if (event.key === 'Left' || event.key === 'ArrowLeft') {
+        leftPressed = false;
+    }
+}
+
+// Move cart based on controls
+function moveCart() {
+    if (rightPressed && cartX < canvas.width - cartWidth) {
+        cartX += 7;
+    } else if (leftPressed && cartX > 0) {
+        cartX -= 7;
+    }
+}
+
+// Handle touch start
+function touchStartHandler(event) {
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+}
+
+// Handle touch move
+function touchMoveHandler(event) {
+    if (touchStartX === null) return;
+
+    const touch = event.touches[0];
+    const touchX = touch.clientX;
+
+    if (touchX > touchStartX + 10 && cartX < canvas.width - cartWidth) {
+        cartX += 10;
+        touchStartX = touchX;
+    } else if (touchX < touchStartX - 10 && cartX > 0) {
+        cartX -= 10;
+        touchStartX = touchX;
+    }
+}
+
+// Handle touch end
+function touchEndHandler() {
+    touchStartX = null;
+}
+
+// Create balls at intervals
+setInterval(createBall, 1000);
+
+// Main game loop
+function gameLoop() {
+    moveCart();
+    draw();
+}
+
+gameLoop();
